@@ -142,9 +142,9 @@ function build_image() {
             echo "current working in $(pwd)"
 
             mkdir -p ./images
-            img_file="./images/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
+            img_file="$init_build_dir/images/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
             if [ -n "$addon" ];then
-                img_file="./images/ubuntu-24.04-preinstalled-desktop-arm64-$board-with-$addon.img"
+                img_file="$init_build_dir/images/ubuntu-24.04-preinstalled-desktop-arm64-$board-with-$addon.img"
             fi
             echo "moving $IMG_PATH to $img_file "
             mv "$IMG_PATH" "$img_file"
@@ -159,6 +159,7 @@ function check_and_handle_image_split(){
     xz -6 --force --keep --quiet --threads=0 "${img_file}"
     rm -f "${img_file}"
     echo "check whether to process img.xz"
+
     COMPRESSED_FILE="${img_file}.xz"
     FILE_SIZE=$(stat -c%s "${COMPRESSED_FILE}")
     MAX_SIZE=$((2 * 1024 * 1024 * 1024))
@@ -173,7 +174,7 @@ function check_and_handle_image_split(){
         rm -rf "${COMPRESSED_FILE}"
     else
         echo "no need to process compressed image,calculate the checksum."
-        sha256sum "$(basename "${img_file}.xz")" > "$(basename "${img_file}.xz.sha256")"
+        sha256sum "$COMPRESSED_FILE" > "$COMPRESSED_FILE.sha256"
     fi
 }
 
