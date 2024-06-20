@@ -171,18 +171,23 @@ function check_and_handle_image_split(){
 
     echo "the file size of $COMPRESSED_FILE is $FILE_SIZE"
 
-    if [ ${FILE_SIZE} -gt ${MAX_SIZE} ]; then
-        echo "the compressed file is large,begin to split img to parts"
+    if [ $FILE_SIZE -gt $MAX_SIZE ]; then
+        echo "the compressed file is large, begin to split img to parts"
         SPLIT_SIZE=2000M
         split -b $SPLIT_SIZE --numeric-suffixes=1 -d "${COMPRESSED_FILE}" "${COMPRESSED_FILE}.part"
-        for part in "$(basename "${COMPRESSED_FILE}").part"*; do
+        # Extract the directory and basename of the compressed file
+        COMPRESSED_DIR=$(dirname "${COMPRESSED_FILE}")
+        COMPRESSED_BASENAME=$(basename "${COMPRESSED_FILE}")
+        find "${COMPRESSED_DIR}" -name "${COMPRESSED_BASENAME}.part*" -print0 | while IFS= read -r -d '' part; do
             sha256sum "$part" > "$part.sha256"
         done
+
         rm -rf "${COMPRESSED_FILE}"
     else
-        echo "no need to process compressed image,calculate the checksum."
+        echo "no need to process compressed image, calculate the checksum."
         sha256sum "$COMPRESSED_FILE" > "$COMPRESSED_FILE.sha256"
     fi
+
 }
 
 
