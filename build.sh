@@ -92,6 +92,11 @@ function build_image() {
 
             mkdir -p $MOUNT_POINT
 
+            export DEBIAN_FRONTEND=noninteractive
+
+            # Override localisation settings to address a perl warning
+            export LC_ALL=C
+
             LOOP_DEVICE=$(losetup -fP --show "$IMG_PATH")
             partprobe "$LOOP_DEVICE"
 
