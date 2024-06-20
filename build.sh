@@ -99,6 +99,9 @@ function build_image() {
             cp -r "./postscripts" $MOUNT_POINT/tmp/
             cp -f "./chroot/chroot-run.sh" $MOUNT_POINT/tmp/chroot-run.sh
 
+            echo "Copying /etc/resolv.conf into chroot environment..."
+            cp /etc/resolv.conf $MOUNT_POINT/etc/resolv.conf
+            
             echo "Entering chroot environment to execute chroot-run.sh..."
             chroot $MOUNT_POINT /usr/bin/qemu-aarch64-static /bin/bash /tmp/chroot-run.sh "$addon"
 
