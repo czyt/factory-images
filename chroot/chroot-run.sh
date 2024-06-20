@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-addon=addon=${1:""}
+addon=$1
 echo "source functions"
 for sc in /tmp/postscripts/*.sh; do
     if [ -f "$sc" ]; then
@@ -18,10 +18,10 @@ if [ -z "$addon" ]; then
     exit 0
 fi
 
-echo "addon provided,start to process $addon"
-case $addon in 
+echo "addon provided,start to process |$addon|"
+case $addon in
 holomotion)
-   install_holomotion
+    install_holomotion
 ;;
 mongodb)
     install_mongodb
