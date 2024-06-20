@@ -7,6 +7,47 @@ fi
 
 set -e  # 在脚本执行过程中遇到错误时停止执行
 
+function setup_mountpoint() {
+    local mountpoint="$1"
+
+    if [ ! -c /dev/mem ]; then
+        mknod -m 660 /dev/mem c 1 1
+        chown root:kmem /dev/mem
+    fi
+
+    mount dev-live -t devtmpfs "$mountpoint/dev"
+    mount devpts-live -t devpts -o nodev,nosuid "$mountpoint/dev/pts"
+    mount proc-live -t proc "$mountpoint/proc"
+    mount sysfs-live -t sysfs "$mountpoint/sys"
+    mount securityfs -t securityfs "$mountpoint/sys/kernel/security"
+    # Provide more up to date apparmor features, matching target kernel
+    # cgroup2 mount for LP: 1944004
+    mount -t cgroup2 none "$mountpoint/sys/fs/cgroup"
+    mount -t tmpfs none "$mountpoint/tmp"
+    mount -t tmpfs none "$mountpoint/var/lib/apt/lists"
+    mount -t tmpfs none "$mountpoint/var/cache/apt"
+    mv "$mountpoint/etc/resolv.conf" resolv.conf.tmp
+    cp /etc/resolv.conf "$mountpoint/etc/resolv.conf"
+    mv "$mountpoint/etc/nsswitch.conf" nsswitch.conf.tmp
+    sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
+}
+
+function teardown_mountpoint() {
+    # Reverse the operations from setup_mountpoint
+    local mountpoint
+    mountpoint=$(realpath "$1")
+
+    # ensure we have exactly one trailing slash, and escape all slashes for awk
+    mountpoint_match=$(echo "$mountpoint" | sed -e 's,/$,,; s,/,\\/,g;')'\/'
+    # sort -r ensures that deeper mountpoints are unmounted first
+    awk </proc/self/mounts "\$2 ~ /$mountpoint_match/ { print \$2 }" | LC_ALL=C sort -r | while IFS= read -r submount; do
+        mount --make-private "$submount"
+        umount "$submount"
+    done
+    mv resolv.conf.tmp "$mountpoint/etc/resolv.conf"
+    mv nsswitch.conf.tmp "$mountpoint/etc/nsswitch.conf"
+}
+
 function build_image() {
     board="$1"
     addon=$2
@@ -42,27 +83,13 @@ function build_image() {
                 xz -d "$image_save_name"
             fi
 
-            mkdir -p $MOUNT_POINT/{dev,proc,sys,boot,tmp}
+            mkdir -p $MOUNT_POINT
 
-            for i in {0..7}; do
-                if [ ! -b "/dev/loop$i" ]; then
-                    mknod "/dev/loop$i" b 7 "$i"
-                    chmod 660 "/dev/loop$i"
-                fi
-            done
-
-            if [ ! -c /dev/loop-control ]; then
-                mknod /dev/loop-control c 10 237
-                chmod 660 /dev/loop-control
-            fi
-
-        
             LOOP_DEVICE=$(losetup -fP --show "$IMG_PATH")
-        
             partprobe "$LOOP_DEVICE"
 
-            ROOT_PARTITION=$(find /dev -type b -name "$(basename ${LOOP_DEVICE})p*" | tail -n 1)
-            
+            ROOT_PARTITION=$(lsblk -lno NAME "$LOOP_DEVICE" | grep -E "^$(basename "$LOOP_DEVICE")p.*" | head -n 1 | sed 's/^/\/dev\//')
+
             if [ -z "$ROOT_PARTITION" ]; then
                 echo "No partitions found in the loop device"
                 losetup -d "$LOOP_DEVICE"
@@ -70,10 +97,7 @@ function build_image() {
             fi
 
             mount "$ROOT_PARTITION" $MOUNT_POINT
-
-            for dir in dev proc sys; do
-                mount --bind /$dir $MOUNT_POINT/$dir
-            done
+            setup_mountpoint $MOUNT_POINT
 
             echo "Image mounted. Returning to previous directory..."
             cd - || unmount_all
@@ -105,22 +129,22 @@ function build_image() {
             echo "Entering chroot environment to execute chroot-run.sh..."
             chroot $MOUNT_POINT /usr/bin/qemu-aarch64-static /bin/bash /tmp/chroot-run.sh "$addon"
 
-            unmount_all
-            
-            mkdir -p images
-            img_file="images/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
-            if [ -n "$addon" ]; then
-                img_file="images/ubuntu-24.04-preinstalled-desktop-arm64-$board-with-$addon.img"
+            teardown_mountpoint $MOUNT_POINT
+
+            mkdir -p ./images
+            img_file="./images/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
+            if [ -n "$addon" ];then
+                img_file="./images/ubuntu-24.04-preinstalled-desktop-arm64-$board-with-$addon.img"
             fi
-            mv "dist/$IMG_PATH" "$img_file"
-            check_and_handle_image_split  "$img_file"
+            echo "moving $IMG_PATH to $img_file "
+            mv "$IMG_PATH" "$img_file"
+            check_and_handle_image_split "$img_file"
         fi
     fi
 }
 
 function check_and_handle_image_split(){
     img_file=$1
-    cd images
     echo -e "\nCompressing $(basename "${img_file}.xz")\n"
     xz -6 --force --keep --quiet --threads=0 "${img_file}"
     rm -f "${img_file}"
@@ -158,18 +182,6 @@ function unmount_all() {
     done
 
     unmount_point $MOUNT_POINT
-
-    for loop_device in $(losetup -l | awk '{if(NR>1)print $1}'); do
-        if [ -e "$loop_device" ]; then
-            for assoc_mount in $(findmnt -nlo TARGET -S "$loop_device"); do
-                unmount_point "$assoc_mount"
-            done
-            echo "Detaching $loop_device"
-            sudo losetup -d "$loop_device" || echo "Warning: Failed to detach $loop_device"
-        fi
-    done
-
-    echo "All loop devices detached and mount points unmounted."
 }
 
 board="$1"
