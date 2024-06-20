@@ -1,16 +1,20 @@
 # shellcheck shell=bash
-function quick-setup() {
+function quick_setup() {
     echo "run quick setup script"
-
     # Install dotnet runtime
+
+    echo "add dotnet ppa"
     add-apt-repository -y ppa:dotnet/backports
+    echo "install dotnet"
     apt-get  install -y  dotnet-runtime-7.0
 
     # Install other packages
-    apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs libmpv-dev mpv ipcalc ffmpeg mpg123 espeak-ng  git libx264-dev xclip  unity-control-center cockpit caribou
+    echo "install basic software runtime and lib"
+    apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs libmpv-dev mpv ipcalc ffmpeg mpg123 espeak-ng  git libx264-dev xclip  unity-control-center cockpit caribou 
 
 
     # add forwarder service
+    echo "install forwarder service"
     local api_url="https://api.github.com/repos/holomotion/forwarder/releases/latest"
     # Use curl to fetch the latest release information and parse the JSON response with grep and awk
     # shellcheck disable=SC2155
@@ -31,14 +35,17 @@ function quick-setup() {
     
 
     # add custom theme to change the bootlogo
+    echo "install holomotion theme"
     THEME_PLYMOUTH="/usr/share/plymouth/themes/holomotion/holomotion.plymouth"
    
     update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth $THEME_PLYMOUTH 150
     update-alternatives --set default.plymouth $THEME_PLYMOUTH
 
     # set wallpapers
+    echo "apply wallpapers dir settings"
     chmod -R 755 /usr/share/backgrounds/
     # setup cockpit info
+    echo "apply custom info for cockpit"
     cat <<-EOF >"/etc/issue.cockpit"
     for more info about Holomotion,plese visit:https://holomotion.tech . you can contact us with support@ntsports.tech
 EOF
@@ -51,6 +58,7 @@ EOF
 EOF
 
     # change timezone
+     echo "change timezone"
     cat <<-EOF >"/etc/timezone"
     Asia/Shanghai
 EOF
@@ -59,14 +67,16 @@ EOF
 
     # change hostname
     # ensure script have execute permission
+    echo "enable hostname changer service"
     chmod +x "/usr/lib/scripts/hostname-renamer.sh"
     systemctl enable hostname-renamer
 
     # firstboot options apply
-    
+    echo "enable firstboot-options-apply service"
     systemctl enable firstboot-options-apply
 
     # disable setup wizard:
+    echo "set skipping oem-config"
     systemctl disable oem-config.service
     systemctl disable oem-config.target
     # Check for additional services that may need to be disabled
@@ -76,12 +86,13 @@ EOF
     apt-get remove -y oem-config-gtk ubiquity-frontend-gtk ubiquity-slideshow-ubuntu
 
     # optional:set password expire after login
-    # chroot "${rootfs}" chage -d 0 holomotion
+    # chage -d 0 holomotion
 
     mkdir -p /etc/skel/.config
     printf yes |  tee /etc/skel/.config/gnome-initial-setup-done
 
     # pre create user and set autologin
+    echo "pre-create user holomotion"
     useradd -m -s "/bin/bash" "holomotion"
     echo "holomotion:holomotion" |  /bin/bash -c "chpasswd"
     usermod -aG sudo "holomotion"
@@ -91,7 +102,9 @@ EOF
     /bin/bash -c "chown -R holomotion:holomotion /home/holomotion"
 
     # chinese config
-    apt-get  install -y   language-pack-zh-hant language-pack-zh-hans language-pack-gnome-zh-hant language-pack-gnome-zh-hans  fonts-wqy-microhei fonts-wqy-zenhei im-config ibus ibus-pinyin ibus-clutter ibus-gtk ibus-gtk3
+    echo "apply chinese config"
+    apt-get  install -y   language-pack-zh-hant language-pack-zh-hans language-pack-gnome-zh-hant language-pack-gnome-zh-hans  fonts-wqy-microhei fonts-wqy-zenhei im-config ibus ibus-pinyin ibus-clutter ibus-gtk ibus-gtk3 locales
+    locale-gen zh_CN.UTF-8
     # Configure the system language to Chinese (Simplified)
     update-locale LANG=zh_CN.UTF-8 LANGUAGE=zh_CN:zh
 
@@ -151,6 +164,7 @@ EOF
     sed -i 's/^#*\(HandleHibernateKey=\).*/\1ignore/' "${LOGIND_CONF}"
 
 
+    echo "set user auto login"
     cat <<-EOL > "/etc/gdm3/custom.conf"
     # GDM configuration storage
     #
@@ -188,6 +202,7 @@ EOL
     KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/usr/lib/scripts/hdmi_sound_toggle.sh"
 EOF
 
+    echo "apply berxel usb rules"
     # apply berxel usb rules
     cat <<-EOF >"/etc/udev/rules.d/berxel-usb.rules"
     SUBSYSTEM=="usb", ATTR{idProduct}=="8612", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
@@ -211,6 +226,9 @@ EOF
     SUBSYSTEM=="usb", ATTR{idProduct}=="000e", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
     SUBSYSTEM=="usb", ATTR{idProduct}=="000f", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
 EOF
+
+   echo "clean useless packages"
+   apt autoremove
 
     echo "run quick setup script completed"
 

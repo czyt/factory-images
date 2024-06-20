@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-function install-mongodb(){
+function install_mongodb(){
 
     echo "install mongodb "
 
