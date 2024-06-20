@@ -7,16 +7,16 @@ fi
 
 set -e  # 在脚本执行过程中遇到错误时停止执行
 
-function prepare_base_img() {
-    device="$1"
+function build_image() {
+    board="$1"
     addon=$2
     local dis_relese_url="https://api.github.com/repos/Joshua-Riek/ubuntu-rockchip/releases/latest"
     local image_latest_tag=$(curl -s "$dis_relese_url" | grep -m 1 '"tag_name":' | awk -F '"' '{print $4}')
     
     if [ -n "$image_latest_tag" ]; then
         echo "The ubuntu-rockchip latest release tag: $image_latest_tag"
-        local image_download_url="https://fastgit.czyt.tech/https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
-        local image_save_name="ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
+        local image_download_url="https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$board.img.xz"
+        local image_save_name="ubuntu-24.04-preinstalled-desktop-arm64-$board.img.xz"
 
         if [ ! -d dist ]; then
             mkdir dist || echo "Dist directory creation failed."
@@ -36,7 +36,7 @@ function prepare_base_img() {
             echo "Image exists, unpacking it..."
            
             MOUNT_POINT="/mnt/ubuntu-img"
-            IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$device.img"
+            IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
 
             if [ ! -f "$IMG_PATH" ]; then
                 xz -d "$image_save_name"
@@ -105,12 +105,38 @@ function prepare_base_img() {
             unmount_all
             
             mkdir -p images
-            if [ -z "$addon" ]; then
-                mv "dist/$IMG_PATH" "images/ubuntu-24.04-preinstalled-desktop-arm64-$device.img"
-            else
-                mv "dist/$IMG_PATH" "images/ubuntu-24.04-preinstalled-desktop-arm64-$device-with-$addon.img"
+            img_file="images/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
+            if [ -n "$addon" ]; then
+                img_file="images/ubuntu-24.04-preinstalled-desktop-arm64-$board-with-$addon.img"
             fi
+            mv "dist/$IMG_PATH" "$img_file"
+            check_and_handle_image_split  "$img_file"
         fi
+    fi
+}
+
+function check_and_handle_image_split(){
+    img_file=$1
+    cd images
+    echo -e "\nCompressing $(basename "${img_file}.xz")\n"
+    xz -6 --force --keep --quiet --threads=0 "${img_file}"
+    rm -f "${img_file}"
+    echo "check whether to process img.xz"
+    COMPRESSED_FILE="${img_file}.xz"
+    FILE_SIZE=$(stat -c%s "${COMPRESSED_FILE}")
+    MAX_SIZE=$((2 * 1024 * 1024 * 1024))
+
+    if [ ${FILE_SIZE} -gt ${MAX_SIZE} ]; then
+        echo "the compressed file is large,begin to split img to parts"
+        SPLIT_SIZE=2000M
+        split -b $SPLIT_SIZE --numeric-suffixes=1 -d "${COMPRESSED_FILE}" "${COMPRESSED_FILE}.part"
+        for part in "$(basename "${COMPRESSED_FILE}").part"*; do
+            sha256sum "$part" > "$part.sha256"
+        done
+        rm -rf "${COMPRESSED_FILE}"
+    else
+        echo "no need to process compressed image,calculate the checksum."
+        sha256sum "$(basename "${img_file}.xz")" > "$(basename "${img_file}.xz.sha256")"
     fi
 }
 
@@ -141,4 +167,7 @@ function unmount_all() {
     echo "All loop devices detached and mount points unmounted."
 }
 
-prepare_base_img "orangepi-5-plus" ""
+board="$1"
+addon="$2"
+
+build_image "$board" "$addon"
