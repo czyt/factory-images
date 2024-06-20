@@ -30,8 +30,8 @@ function setup_mountpoint() {
     mount -t tmpfs none "$mountpoint/var/cache/apt"
     mv "$mountpoint"/etc/resolv.conf{,.tmp}
     cp /etc/resolv.conf "$mountpoint/etc/resolv.conf"
-    #mv "$mountpoint"/etc/nsswitch.conf{.,tmp}
-    #sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
+    mv "$mountpoint"/etc/nsswitch.conf{.,tmp}
+    sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
 }
 
 function teardown_mountpoint() {
@@ -47,7 +47,7 @@ function teardown_mountpoint() {
         umount "$submount"
     done
     mv "$mountpoint"/etc/resolv.conf{.tmp,}
-    #mv nsswitch.conf.tmp "$mountpoint/etc/nsswitch.conf"
+    mv "$mountpoint"/etc/nsswitch.conf{.tmp,}
 }
 
 function build_image() {
