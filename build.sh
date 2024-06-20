@@ -10,6 +10,8 @@ set -e  # 在脚本执行过程中遇到错误时停止执行
 function setup_mountpoint() {
     local mountpoint="$1"
 
+
+    echo "run setup mount point in $(pwd)"
     if [ ! -c /dev/mem ]; then
         mknod -m 660 /dev/mem c 1 1
         chown root:kmem /dev/mem
@@ -26,17 +28,17 @@ function setup_mountpoint() {
     mount -t tmpfs none "$mountpoint/tmp"
     mount -t tmpfs none "$mountpoint/var/lib/apt/lists"
     mount -t tmpfs none "$mountpoint/var/cache/apt"
-    mv "$mountpoint/etc/resolv.conf" resolv.conf.tmp
+    mv "$mountpoint"/etc/resolv.conf{,.tmp}
     cp /etc/resolv.conf "$mountpoint/etc/resolv.conf"
-    mv "$mountpoint/etc/nsswitch.conf" nsswitch.conf.tmp
-    sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
+    #mv "$mountpoint"/etc/nsswitch.conf{.,tmp}
+    #sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
 }
 
 function teardown_mountpoint() {
     # Reverse the operations from setup_mountpoint
     local mountpoint
     mountpoint=$(realpath "$1")
-
+    echo "run teardown mount point in $(pwd)"
     # ensure we have exactly one trailing slash, and escape all slashes for awk
     mountpoint_match=$(echo "$mountpoint" | sed -e 's,/$,,; s,/,\\/,g;')'\/'
     # sort -r ensures that deeper mountpoints are unmounted first
@@ -44,16 +46,19 @@ function teardown_mountpoint() {
         mount --make-private "$submount"
         umount "$submount"
     done
-    mv resolv.conf.tmp "$mountpoint/etc/resolv.conf"
-    mv nsswitch.conf.tmp "$mountpoint/etc/nsswitch.conf"
+    mv "$mountpoint"/etc/resolv.conf{.tmp,}
+    #mv nsswitch.conf.tmp "$mountpoint/etc/nsswitch.conf"
 }
 
 function build_image() {
     board="$1"
     addon=$2
+
+    init_build_dir=$(pwd)
+
     local dis_relese_url="https://api.github.com/repos/Joshua-Riek/ubuntu-rockchip/releases/latest"
     local image_latest_tag=$(curl -s "$dis_relese_url" | grep -m 1 '"tag_name":' | awk -F '"' '{print $4}')
-    
+
     if [ -n "$image_latest_tag" ]; then
         echo "The ubuntu-rockchip latest release tag: $image_latest_tag"
         local image_download_url="https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$board.img.xz"
@@ -78,10 +83,11 @@ function build_image() {
             echo "Image exists, unpacking it..."
 
             MOUNT_POINT="/mnt/ubuntu-img"
-            IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
+            IMG_PATH="$init_build_dir/dist/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
 
             if [ ! -f "$IMG_PATH" ]; then
                 xz -d "$image_save_name"
+                rm -rf "$image_save_name"
             fi
 
             mkdir -p $MOUNT_POINT
@@ -100,9 +106,8 @@ function build_image() {
             mount "$ROOT_PARTITION" $MOUNT_POINT
             setup_mountpoint $MOUNT_POINT
 
-            echo "Image mounted. Returning to previous directory..."
-            cd - || exit 0
-
+            echo "Image mounted. Returning to source directory..."
+            cd "$init_build_dir"
             echo "current working in $(pwd)"
 
             echo "Copying QEMU binary..."
@@ -132,8 +137,8 @@ function build_image() {
             echo "enter the dist dir again.."
             teardown_mountpoint $MOUNT_POINT
 
-            echo "change to previous dir"
-            cd - || exit 0
+            echo "change to resource dir"
+            cd "$init_build_dir"
             echo "current working in $(pwd)"
 
             mkdir -p ./images
