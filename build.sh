@@ -8,24 +8,30 @@ function prepare_base_img(){
     if [ -n "$image_latest_tag" ]; then
         echo "the ubuntu-rockchip latest release tag: $image_latest_tag"
         image_download_url="https://fastgit.czyt.tech/https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
-        mkdir dist || echo "dist dir already exist."
+
+        image_save_name="ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
+
+        if [ ! -d dist ];then
+                mkdir dist || echo "dist dir create failed."
+        fi
+
         cd dist||exit 0
 
-        if [ -f "base.img.xz" ]; then
-            echo "base.img.xz already exists. Skipping download."
+        if [ -f "$image_save_name" ]; then
+            echo "$image_save_name already exists. Skipping download."
         else
-            echo "base.img.xz not found. Downloading..."
-            wget "$image_download_url" -O base.img.xz
+            echo "$image_save_name not found. Downloading..."
+            wget "$image_download_url" -O "$image_save_name"
         fi
 
         echo "check the image exist or not"
-        if [ -f "base.img.xz" ];then
+        if [ -f "$image_save_name" ];then
             echo "image  exist,unpack it"
-            xz -d base.img.xz
+            xz -d "$image_save_name"
 
             MOUNT_POINT="/mnt/ubuntu-img"
             IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$device.img"
-            
+
             mkdir -p $MOUNT_POINT/{dev,proc,sys,boot,usr,tmp}
             losetup -P /dev/loop0 "$IMG_PATH"
             mount /dev/loop0p2 $MOUNT_POINT
@@ -40,8 +46,8 @@ function prepare_base_img(){
             cp /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/
              
             echo "copying systemd service define and related scripts"
-            cp -f ./overlay/usr/lib/systemd/system/* $MOUNT_POINT/usr/lib/systemd/system/
-            cp -f ./overlay/usr/lib/scripts/* $MOUNT_POINT/usr/lib/scripts/
+            cp -r ./overlay/usr/lib/systemd/system/* $MOUNT_POINT/usr/lib/systemd/system/
+            cp -r ./overlay/usr/lib/scripts/* $MOUNT_POINT/usr/lib/
 
             echo "copying holomotion theme and wallpapers.."
             cp -r ./overlay/usr/share/plymouth/themes/holomotion $MOUNT_POINT/usr/share/plymouth/themes/
@@ -52,13 +58,14 @@ function prepare_base_img(){
             mkdir -p $MOUNT_POINT/tmp
             cp -r "./postscripts"  $MOUNT_POINT/tmp/
 
-            chroot /mnt/ubuntu-img /usr/bin/qemu-aarch64-static /bin/bash <<EOF
-            for script in ./postscripts/*.sh; do
-                if [ -f "$script" ]; then
-                    source "$script"
+            chroot /mnt/ubuntu-img /usr/bin/qemu-aarch64-static /usr/bin/bash <<EOF
+            for sc in /tmp/postscripts/*.sh; do
+                if [ -f "$sc" ]; then
+                    source "$sc"
                 fi
             done
-             echo "apply quick setup"
+            
+            echo "apply quick setup"
             quick-setup
 
 EOF

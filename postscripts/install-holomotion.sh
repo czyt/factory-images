@@ -1,8 +1,6 @@
 # shellcheck shell=bash
 function install_holomotion() {
-    local rootfs="$1"
-    local overlay="$2"
-    echo "pre-install holomotion with rootfs:${rootfs} overlay:${overlay}"
+    echo "pre-install holomotion"
 
     installerRepo="https://e.coding.net/g-hvab4800/holomotion_update/HoloMotion_Update.git"
     VERSION_REGEX_RELEASE="^[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}$"

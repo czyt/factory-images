@@ -1,8 +1,7 @@
 # shellcheck shell=bash
 function install_training_assist() {
-    local rootfs="$1"
-    local overlay="$2"
-    echo "pre-install training_assist with rootfs:${rootfs} overlay:${overlay}"
+
+    echo "pre-install training_assist "
     installerRepo="https://e.coding.net/g-hvab4800/train_assist/client_versions.git"
     VERSION_REGEX_RELEASE="^[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}$"
 

@@ -1,12 +1,11 @@
 # shellcheck shell=bash
 function install-mongodb(){
-    local rootfs="$1"
-    local overlay="$2"
-    echo "install mongodb with rootfs:${rootfs} overlay:${overlay}"
+
+    echo "install mongodb "
 
      bash -c "curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/mongodb-server-7.0.gpg"
 
-    cat <<-EOF >"${rootfs}/etc/apt/sources.list.d/mongodb-org-7.0.list"
+    cat <<-EOF >"/etc/apt/sources.list.d/mongodb-org-7.0.list"
     deb [ arch=amd64,arm64 signed-by=/etc/apt/trusted.gpg.d/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
 EOF
      sudo apt-get update
