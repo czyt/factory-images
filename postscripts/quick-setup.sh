@@ -228,9 +228,8 @@ EOF
 EOF
 
    echo "clean useless packages"
-   apt autoremove
-
-    echo "run quick setup script completed"
+   apt -y autoremove
+   echo "run quick setup script completed"
 
     return 0
 }
