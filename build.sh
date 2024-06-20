@@ -101,7 +101,7 @@ function build_image() {
 
             echo "Copying /etc/resolv.conf into chroot environment..."
             cp /etc/resolv.conf $MOUNT_POINT/etc/resolv.conf
-            
+
             echo "Entering chroot environment to execute chroot-run.sh..."
             chroot $MOUNT_POINT /usr/bin/qemu-aarch64-static /bin/bash /tmp/chroot-run.sh "$addon"
 
@@ -151,20 +151,22 @@ function unmount_point() {
 }
 
 function unmount_all() {
-    unmount_point /mnt/ubuntu-img/dev/pts
-    unmount_point /mnt/ubuntu-img/dev
-    unmount_point /mnt/ubuntu-img/proc
-    unmount_point /mnt/ubuntu-img/sys
-    unmount_point /mnt/ubuntu-img/boot
+    MOUNT_POINT="/mnt/ubuntu-img"
 
-    unmount_point /mnt/ubuntu-img
+    for mount_dir in $MOUNT_POINT/dev/pts $MOUNT_POINT/dev $MOUNT_POINT/proc $MOUNT_POINT/sys $MOUNT_POINT/boot; do
+        unmount_point "$mount_dir"
+    done
+
+    unmount_point $MOUNT_POINT
 
     for loop_device in $(losetup -l | awk '{if(NR>1)print $1}'); do
-        for assoc_mount in $(findmnt -nlo TARGET -S "$loop_device"); do
-            unmount_point "$assoc_mount"
-        done
-        echo "Detaching $loop_device"
-        sudo losetup -d "$loop_device"
+        if [ -e "$loop_device" ]; then
+            for assoc_mount in $(findmnt -nlo TARGET -S "$loop_device"); do
+                unmount_point "$assoc_mount"
+            done
+            echo "Detaching $loop_device"
+            sudo losetup -d "$loop_device" || echo "Warning: Failed to detach $loop_device"
+        fi
     done
 
     echo "All loop devices detached and mount points unmounted."
