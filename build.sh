@@ -41,15 +41,15 @@ function prepare_base_img() {
 
             # 创建和检查 loop 设备
             for i in {0..7}; do
-                if [ ! -b /dev/loop$i ]; then
-                    sudo mknod /dev/loop$i b 7 $i
-                    sudo chmod 660 /dev/loop$i
+                if [ ! -b "/dev/loop$i" ]; then
+                     mknod "/dev/loop$i" b 7 "$i"
+                     chmod 660 "/dev/loop$i"
                 fi
             done
 
             if [ ! -c /dev/loop-control ]; then
-                sudo mknod /dev/loop-control c 10 237
-                sudo chmod 660 /dev/loop-control
+                 mknod /dev/loop-control c 10 237
+                 chmod 660 /dev/loop-control
             fi
 
             # 设置 loop 设备
@@ -78,7 +78,7 @@ function prepare_base_img() {
 
             echo "Copying QEMU binary..."
             apt-get install qemu-user-static binfmt-support -y
-            cp -f /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/
+            cp -f /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/qemu-aarch64-static
 
             echo "Copying systemd service definitions and related scripts..."
             cp -r ./overlay/usr/lib/systemd/system/* $MOUNT_POINT/usr/lib/systemd/system/
@@ -138,5 +138,11 @@ function unmount_all() {
 
     echo "All loop devices detached and mount points unmounted."
 }
+
+
+if [ -z "$SUDO_USER" ]; then
+    echo "This script must be run with sudo."
+    exit 1
+fi
 
 prepare_base_img "orangepi-5-plus" ""
