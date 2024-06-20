@@ -4,7 +4,7 @@ set -e  # 在脚本执行过程中遇到错误时停止执行
 
 function prepare_base_img() {
     device="$1"
-    addon=${2:""}
+    addon=$2
     local dis_relese_url="https://api.github.com/repos/Joshua-Riek/ubuntu-rockchip/releases/latest"
     local image_latest_tag=$(curl -s "$dis_relese_url" | grep -m 1 '"tag_name":' | awk -F '"' '{print $4}')
     
