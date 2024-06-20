@@ -69,13 +69,13 @@ function build_image() {
             echo "$image_save_name already exists. Skipping download."
         else
             echo "$image_save_name not found. Downloading..."
-            wget "$image_download_url" -O "$image_save_name"
+            wget "$image_download_url" -O "$image_save_name"> /dev/null
         fi
 
         echo "Check if the image exists"
         if [ -f "$image_save_name" ]; then
             echo "Image exists, unpacking it..."
-           
+
             MOUNT_POINT="/mnt/ubuntu-img"
             IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
 
@@ -104,7 +104,7 @@ function build_image() {
 
             echo "Copying QEMU binary..."
             apt-get install qemu-user-static binfmt-support -y
-            
+
             if [ ! -f $MOUNT_POINT/usr/bin/qemu-aarch64-static ]; then
                 cp /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/qemu-aarch64-static
             fi
