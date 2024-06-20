@@ -5,10 +5,11 @@ on:
     tags:
       - "*"
   workflow_dispatch:
+
 permissions:
   contents: write
-run-name: Release orange pi 5 plus
 
+run-name: Release orangepi 5 plus
 
 jobs:
   prepare_release:
@@ -27,8 +28,7 @@ jobs:
     outputs:
       release_id: ${{ steps.release.outputs.id }}
 
-
- build:
+  build:
     runs-on: ubuntu-latest
     needs: [prepare_release]
     name: Build image
@@ -41,8 +41,7 @@ jobs:
           - holomotion
           - mongodb
           - trainging
-
-      steps:
+    steps:  # 将 steps 重新对齐修复
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -69,3 +68,6 @@ jobs:
           file: images/ubuntu-*-preinstalled-*-arm64-${{ matrix.board }}.*
           draft: false
           overwrite: true
+
+      - name: Clean cache
+        run: sync && sudo rm -rf ./images/ubuntu-*-preinstalled-*-arm64-${{ matrix.board }}.* && sync
