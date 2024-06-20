@@ -31,7 +31,7 @@ function setup_mountpoint() {
     mv "$mountpoint"/etc/resolv.conf{,.tmp}
     cp /etc/resolv.conf "$mountpoint/etc/resolv.conf"
     mv "$mountpoint"/etc/nsswitch.conf{,.tmp}
-    sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
+    sed 's/systemd//g'  "$mountpoint/etc/nsswitch.conf"
 }
 
 function teardown_mountpoint() {
