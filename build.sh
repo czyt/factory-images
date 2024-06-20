@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ -z "$SUDO_USER" ]; then
+    echo "This script must be run with sudo."
+    exit 1
+fi
+
 set -e  # 在脚本执行过程中遇到错误时停止执行
 
 function prepare_base_img() {
@@ -8,12 +13,12 @@ function prepare_base_img() {
     local dis_relese_url="https://api.github.com/repos/Joshua-Riek/ubuntu-rockchip/releases/latest"
     local image_latest_tag=$(curl -s "$dis_relese_url" | grep -m 1 '"tag_name":' | awk -F '"' '{print $4}')
     
-    if [ -n "$image_latest_tag" ];then
+    if [ -n "$image_latest_tag" ]; then
         echo "The ubuntu-rockchip latest release tag: $image_latest_tag"
         local image_download_url="https://fastgit.czyt.tech/https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
         local image_save_name="ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
 
-        if [ ! -d dist ];then
+        if [ ! -d dist ]; then
             mkdir dist || echo "Dist directory creation failed."
         fi
 
@@ -27,41 +32,38 @@ function prepare_base_img() {
         fi
 
         echo "Check if the image exists"
-        if [ -f "$image_save_name" ];then
+        if [ -f "$image_save_name" ]; then
             echo "Image exists, unpacking it..."
            
             MOUNT_POINT="/mnt/ubuntu-img"
             IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$device.img"
 
-            if [ ! -f "$IMG_PATH" ];then
+            if [ ! -f "$IMG_PATH" ]; then
                 xz -d "$image_save_name"
             fi
 
-            mkdir -p $MOUNT_POINT/{dev,proc,sys,etc,usr,bin,tmp}
+            mkdir -p $MOUNT_POINT/{dev,proc,sys,boot,tmp}
 
-            # 创建和检查 loop 设备
             for i in {0..7}; do
                 if [ ! -b "/dev/loop$i" ]; then
-                     mknod "/dev/loop$i" b 7 "$i"
-                     chmod 660 "/dev/loop$i"
+                    mknod "/dev/loop$i" b 7 "$i"
+                    chmod 660 "/dev/loop$i"
                 fi
             done
 
             if [ ! -c /dev/loop-control ]; then
-                 mknod /dev/loop-control c 10 237
-                 chmod 660 /dev/loop-control
+                mknod /dev/loop-control c 10 237
+                chmod 660 /dev/loop-control
             fi
 
-            # 设置 loop 设备
+        
             LOOP_DEVICE=$(losetup -fP --show "$IMG_PATH")
         
-            # 确保 loop 设备检测到分区
             partprobe "$LOOP_DEVICE"
 
-            # 获取动态分区名
-            ROOT_PARTITION=$(ls ${LOOP_DEVICE}*p* | tail -n 1)  # 假设最后一个分区是根分区
+            ROOT_PARTITION=$(find /dev -type b -name "$(basename ${LOOP_DEVICE})p*" | tail -n 1)
             
-            if [ -z "$ROOT_PARTITION" ];then
+            if [ -z "$ROOT_PARTITION" ]; then
                 echo "No partitions found in the loop device"
                 losetup -d "$LOOP_DEVICE"
                 exit 1
@@ -69,7 +71,7 @@ function prepare_base_img() {
 
             mount "$ROOT_PARTITION" $MOUNT_POINT
 
-            for dir in dev proc sys etc usr bin tmp; do
+            for dir in dev proc sys; do
                 mount --bind /$dir $MOUNT_POINT/$dir
             done
 
@@ -78,7 +80,10 @@ function prepare_base_img() {
 
             echo "Copying QEMU binary..."
             apt-get install qemu-user-static binfmt-support -y
-            cp -f /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/qemu-aarch64-static
+            
+            if [ ! -f $MOUNT_POINT/usr/bin/qemu-aarch64-static ]; then
+                cp /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/qemu-aarch64-static
+            fi
 
             echo "Copying systemd service definitions and related scripts..."
             cp -r ./overlay/usr/lib/systemd/system/* $MOUNT_POINT/usr/lib/systemd/system/
@@ -100,12 +105,11 @@ function prepare_base_img() {
             unmount_all
             
             mkdir -p images
-            if [ -z "$addon" ];then
+            if [ -z "$addon" ]; then
                 mv "dist/$IMG_PATH" "images/ubuntu-24.04-preinstalled-desktop-arm64-$device.img"
             else
                 mv "dist/$IMG_PATH" "images/ubuntu-24.04-preinstalled-desktop-arm64-$device-with-$addon.img"
             fi
-           
         fi
     fi
 }
@@ -122,9 +126,7 @@ function unmount_all() {
     unmount_point /mnt/ubuntu-img/dev
     unmount_point /mnt/ubuntu-img/proc
     unmount_point /mnt/ubuntu-img/sys
-    unmount_point /mnt/ubuntu-img/etc
-    unmount_point /mnt/ubuntu-img/usr
-    unmount_point /mnt/ubuntu-img/bin
+    unmount_point /mnt/ubuntu-img/boot
 
     unmount_point /mnt/ubuntu-img
 
@@ -138,11 +140,5 @@ function unmount_all() {
 
     echo "All loop devices detached and mount points unmounted."
 }
-
-
-if [ -z "$SUDO_USER" ]; then
-    echo "This script must be run with sudo."
-    exit 1
-fi
 
 prepare_base_img "orangepi-5-plus" ""
