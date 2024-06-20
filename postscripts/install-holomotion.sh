@@ -22,7 +22,7 @@ function install_holomotion() {
 
     /bin/bash -c "[ -d $ntsport_dir ] || mkdir -p $ntsport_dir"
 
-    cat <<-EOF >"${rootfs}${ntsport_dir}/branch.txt"
+    cat <<-EOF >"${ntsport_dir}/branch.txt"
     release
 EOF
     git clone $installerRepo $program_dir
@@ -35,17 +35,17 @@ EOF
         git -C $program_dir reset --hard "$latest_version"
     fi
 
-    echo "check file $install_src in $rootfs"
-    if [ -f "${rootfs}${install_src}" ]; then
-        echo "copying ${install_src} to ${install_app} in ${rootfs}"
+    echo "check file $install_src "
+    if [ -f "${install_src}" ]; then
+        echo "copying ${install_src} to ${install_app} "
          cp -f "${install_src}" "${install_app}" >/dev/null 2>&1 || true
         echo "create soft link for $install_app  with target $install_bin"
          ln -s -f "$install_app" "$install_bin" >/dev/null 2>&1 || true
          chmod +x "$install_app" >/dev/null 2>&1 || true
     fi
 
-    echo "check file $startup_app in $rootfs"
-    if [ -f "${rootfs}${startup_app}" ];then
+    echo "check file $startup_app "
+    if [ -f "${startup_app}" ];then
         echo "create soft link for $startup_app  with target $startup_bin"
          ln -s -f "$startup_app" "$startup_bin" >/dev/null 2>&1 || true
          chmod +x "$startup_app" >/dev/null 2>&1 || true
@@ -53,9 +53,9 @@ EOF
     fi
 
 
-    mkdir -p "${rootfs}/usr/share/applications"
+    mkdir -p "/usr/share/applications"
     # create desktop
-    cat <<-EOF >"${rootfs}/usr/share/applications/HoloMotion.desktop"
+    cat <<-EOF >"/usr/share/applications/HoloMotion.desktop"
     [Desktop Entry]
     Type=Application
     Name=HoloMotion
@@ -68,8 +68,8 @@ EOF
 EOF
 
     # create startup run
-    mkdir -p "${rootfs}/home/holomotion/.config/autostart"
-    cat <<-EOF >"${rootfs}/home/holomotion/.config/autostart/HoloMotion.desktop"
+    mkdir -p "/home/holomotion/.config/autostart"
+    cat <<-EOF >"/home/holomotion/.config/autostart/HoloMotion.desktop"
     [Desktop Entry]
     Type=Application
     Name=HoloMotion

@@ -18,6 +18,7 @@ if [ -z "$addon" ]; then
     exit 0
 fi
 
+echo "addon provided,start to process $addon"
 case $addon in 
 holomotion)
    install_holomotion
