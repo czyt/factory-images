@@ -164,6 +164,8 @@ function check_and_handle_image_split(){
     FILE_SIZE=$(stat -c%s "${COMPRESSED_FILE}")
     MAX_SIZE=$((2 * 1024 * 1024 * 1024))
 
+    echo "the file size of $COMPRESSED_FILE is $FILE_SIZE"
+
     if [ ${FILE_SIZE} -gt ${MAX_SIZE} ]; then
         echo "the compressed file is large,begin to split img to parts"
         SPLIT_SIZE=2000M
