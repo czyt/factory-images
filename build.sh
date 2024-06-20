@@ -69,7 +69,7 @@ function build_image() {
             echo "$image_save_name already exists. Skipping download."
         else
             echo "$image_save_name not found. Downloading..."
-            wget "$image_download_url" -O "$image_save_name"> /dev/null
+            wget "$image_download_url" -O "$image_save_name"> /dev/null  2>&1
         fi
 
         echo "Check if the image exists"
