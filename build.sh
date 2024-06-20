@@ -10,15 +10,22 @@ function prepare_base_img(){
         image_download_url="https://fastgit.czyt.tech/https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$device.img.xz"
         mkdir dist || echo "dist dir already exist."
         cd dist||exit 0
-        [ -f "base.img.xz" ] || wget "$image_download_url" -O base.img.xz
+
+        if [ -f "base.img.xz" ]; then
+            echo "base.img.xz already exists. Skipping download."
+        else
+            echo "base.img.xz not found. Downloading..."
+            wget "$image_download_url" -O base.img.xz
+        fi
+
         echo "check the image exist or not"
         if [ -f "base.img.xz" ];then
             echo "image  exist,unpack it"
             xz -d base.img.xz
 
             MOUNT_POINT="/mnt/ubuntu-img"
-
-            local IMG_PATH="ubuntu-24.04-preinstalled-server-arm64-$device.img"
+            IMG_PATH="ubuntu-24.04-preinstalled-desktop-arm64-$device.img"
+            
             mkdir -p $MOUNT_POINT/{dev,proc,sys,boot,usr,tmp}
             losetup -P /dev/loop0 "$IMG_PATH"
             mount /dev/loop0p2 $MOUNT_POINT
@@ -26,6 +33,8 @@ function prepare_base_img(){
                 mount --bind /$dir $MOUNT_POINT/$dir
             done
 
+            echo "image mount done.return to previous dir"
+            cd - ||  unmount_all
             echo "copy qemu binary..."
             apt-get install qemu-user-static -y
             cp /usr/bin/qemu-aarch64-static $MOUNT_POINT/usr/bin/
