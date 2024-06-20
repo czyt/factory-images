@@ -30,7 +30,7 @@ function setup_mountpoint() {
     mount -t tmpfs none "$mountpoint/var/cache/apt"
     mv "$mountpoint"/etc/resolv.conf{,.tmp}
     cp /etc/resolv.conf "$mountpoint/etc/resolv.conf"
-    mv "$mountpoint"/etc/nsswitch.conf{.,tmp}
+    mv "$mountpoint"/etc/nsswitch.conf{,.tmp}
     sed 's/systemd//g' nsswitch.conf.tmp > "$mountpoint/etc/nsswitch.conf"
 }
 
