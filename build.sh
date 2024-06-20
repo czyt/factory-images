@@ -64,6 +64,7 @@ function build_image() {
         fi
 
         cd dist || exit 0
+        echo "current working in $(pwd)"
 
         if [ -f "$image_save_name" ];then
             echo "$image_save_name already exists. Skipping download."
@@ -100,7 +101,9 @@ function build_image() {
             setup_mountpoint $MOUNT_POINT
 
             echo "Image mounted. Returning to previous directory..."
-            cd - || unmount_all
+            cd - || exit 0
+
+            echo "current working in $(pwd)"
 
             echo "Copying QEMU binary..."
             apt-get install qemu-user-static binfmt-support -y
@@ -126,8 +129,12 @@ function build_image() {
 
             echo "Entering chroot environment to execute chroot-run.sh..."
             chroot $MOUNT_POINT /usr/bin/qemu-aarch64-static /bin/bash /tmp/chroot-run.sh "$addon"
-
+            echo "enter the dist dir again.."
             teardown_mountpoint $MOUNT_POINT
+
+            echo "change to previous dir"
+            cd - || exit 0
+            echo "current working in $(pwd)"
 
             mkdir -p ./images
             img_file="./images/ubuntu-24.04-preinstalled-desktop-arm64-$board.img"
@@ -165,22 +172,6 @@ function check_and_handle_image_split(){
     fi
 }
 
-function unmount_point() {
-    if mountpoint -q "$1"; then
-        echo "Unmounting $1"
-        sudo umount "$1"
-    fi
-}
-
-function unmount_all() {
-    MOUNT_POINT="/mnt/ubuntu-img"
-
-    for mount_dir in $MOUNT_POINT/dev/pts $MOUNT_POINT/dev $MOUNT_POINT/proc $MOUNT_POINT/sys $MOUNT_POINT/boot; do
-        unmount_point "$mount_dir"
-    done
-
-    unmount_point $MOUNT_POINT
-}
 
 board="$1"
 addon="$2"
