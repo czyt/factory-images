@@ -229,8 +229,8 @@ EOL
     SUBSYSTEM=="usb", ATTR{idProduct}=="000f", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
 EOF
 
-   echo "clean useless packages"
-   apt -y autoremove
+#    echo "clean useless packages"
+#    apt -y autoremove
    echo "run quick setup script completed"
 
     return 0
