@@ -13,7 +13,12 @@ function quick_setup() {
     apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs   ipcalc  espeak-ng  git  xclip  unity-control-center cockpit caribou 
 
     # apt-get install -y libx264-dev libmpv-dev ffmpeg mpg123 mpv
- 
+echo "check the mpp server"
+if [ -f "/dev/mpp_server" ];then
+    echo "the /dev/mpp_server exists "
+else
+    echo "the /dev/mpp_server not exists "
+fi
 
     # add forwarder service
     echo "install forwarder service"
@@ -30,16 +35,13 @@ function quick_setup() {
             unzip "${forwarder_save_path}" -d "usr/bin/"
             rm "${forwarder_save_path}"
         fi
-       
         systemctl enable forwarder
     fi
 
-    
 
     # add custom theme to change the bootlogo
     # echo "install holomotion theme"
     # THEME_PLYMOUTH="/usr/share/plymouth/themes/holomotion/holomotion.plymouth"
-   
     # update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth $THEME_PLYMOUTH 150
     # update-alternatives --set default.plymouth $THEME_PLYMOUTH
 
@@ -229,6 +231,12 @@ EOL
     SUBSYSTEM=="usb", ATTR{idProduct}=="000f", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
 EOF
 
+echo "check the mpp server"
+if [ -f "/dev/mpp_server" ];then
+    echo "the /dev/mpp_server exists "
+else
+    echo "the /dev/mpp_server not exists "
+fi
 #    echo "clean useless packages"
 #    apt -y autoremove
    echo "run quick setup script completed"

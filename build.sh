@@ -116,6 +116,11 @@ function build_image() {
             cd "$init_build_dir"
             echo "current working in $(pwd)"
 
+            echo "check the mpp server"
+            if [ -f "/dev/mpp_server" ];then
+                echo "the /dev/mpp_server exists "
+            fi
+
             echo "Copying QEMU binary..."
             apt-get install qemu-user-static binfmt-support -y
 
