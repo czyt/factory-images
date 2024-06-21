@@ -5,7 +5,8 @@ if [ -z "$SUDO_USER" ]; then
     exit 1
 fi
 
-set -e  # 在脚本执行过程中遇到错误时停止执行
+set --eE 
+trap 'echo Error: in $0 on line $LINENO' ERR  # 在脚本执行过程中遇到错误时停止执行
 
 function setup_mountpoint() {
     local mountpoint="$1"
@@ -124,7 +125,7 @@ function build_image() {
 
             echo "Copying systemd service definitions and related scripts..."
             cp -r ./overlay/usr/lib/systemd/system/* $MOUNT_POINT/usr/lib/systemd/system/
-            cp -r ./overlay/usr/lib/scripts/* $MOUNT_POINT/usr/lib/
+            cp -r ./overlay/usr/lib/scripts/* $MOUNT_POINT/usr/lib/scripts
 
             echo "Copying Holomotion theme and wallpapers..."
             cp -r ./overlay/usr/share/plymouth/themes/holomotion $MOUNT_POINT/usr/share/plymouth/themes/
