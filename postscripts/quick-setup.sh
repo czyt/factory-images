@@ -10,8 +10,10 @@ function quick_setup() {
 
     # Install other packages
     echo "install basic software runtime and lib"
-    apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs libmpv-dev mpv ipcalc ffmpeg mpg123 espeak-ng  git libx264-dev xclip  unity-control-center cockpit caribou 
+    apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs   ipcalc  espeak-ng  git  xclip  unity-control-center cockpit caribou 
 
+    # apt-get install -y libx264-dev libmpv-dev ffmpeg mpg123 mpv
+ 
 
     # add forwarder service
     echo "install forwarder service"
