@@ -35,11 +35,11 @@ function quick_setup() {
     
 
     # add custom theme to change the bootlogo
-    echo "install holomotion theme"
-    THEME_PLYMOUTH="/usr/share/plymouth/themes/holomotion/holomotion.plymouth"
+    # echo "install holomotion theme"
+    # THEME_PLYMOUTH="/usr/share/plymouth/themes/holomotion/holomotion.plymouth"
    
-    update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth $THEME_PLYMOUTH 150
-    update-alternatives --set default.plymouth $THEME_PLYMOUTH
+    # update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth $THEME_PLYMOUTH 150
+    # update-alternatives --set default.plymouth $THEME_PLYMOUTH
 
     # set wallpapers
     echo "apply wallpapers dir settings"
@@ -156,12 +156,12 @@ EOF
 EOF
 
     # uncomment logind.conf to set power options
-    LOGIND_CONF="/etc/systemd/logind.conf"
-    sed -i 's/^#*\(HandleLidSwitch=\).*/\1ignore/' "${LOGIND_CONF}"
-    sed -i 's/^#*\(HandleLidSwitchDocked=\).*/\1ignore/' "${LOGIND_CONF}"
-    sed -i 's/^#*\(HandleLidSwitchExternalPower=\).*/\1ignore/' "${LOGIND_CONF}"
-    sed -i 's/^#*\(HandleSuspendKey=\).*/\1ignore/' "${LOGIND_CONF}"
-    sed -i 's/^#*\(HandleHibernateKey=\).*/\1ignore/' "${LOGIND_CONF}"
+    # LOGIND_CONF="/etc/systemd/logind.conf"
+    # sed -i 's/^#*\(HandleLidSwitch=\).*/\1ignore/' "${LOGIND_CONF}"
+    # sed -i 's/^#*\(HandleLidSwitchDocked=\).*/\1ignore/' "${LOGIND_CONF}"
+    # sed -i 's/^#*\(HandleLidSwitchExternalPower=\).*/\1ignore/' "${LOGIND_CONF}"
+    # sed -i 's/^#*\(HandleSuspendKey=\).*/\1ignore/' "${LOGIND_CONF}"
+    # sed -i 's/^#*\(HandleHibernateKey=\).*/\1ignore/' "${LOGIND_CONF}"
 
 
     echo "set user auto login"
@@ -198,9 +198,9 @@ EOF
 EOL
 
     # hdmi audio auto switch
-    cat <<-EOF >"/etc/udev/rules.d/99-hdmi_sound.rules"
-    KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/usr/lib/scripts/hdmi_sound_toggle.sh"
-EOF
+#     cat <<-EOF >"/etc/udev/rules.d/99-hdmi_sound.rules"
+#     KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/usr/lib/scripts/hdmi_sound_toggle.sh"
+# EOF
 
     echo "apply berxel usb rules"
     # apply berxel usb rules
