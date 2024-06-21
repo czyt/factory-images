@@ -143,6 +143,9 @@ function build_image() {
             echo "enter the dist dir again.."
             teardown_mountpoint $MOUNT_POINT
 
+            umount $MOUNT_POINT || echo "Failed to unmount $MOUNT_POINT"
+            losetup -d "$LOOP_DEVICE" || echo "Failed to detach loop device $LOOP_DEVICE"
+
             echo "change to resource dir"
             cd "$init_build_dir"
             echo "current working in $(pwd)"
