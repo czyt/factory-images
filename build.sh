@@ -5,7 +5,7 @@ if [ -z "$SUDO_USER" ]; then
     exit 1
 fi
 
-set --eE 
+set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR  # 在脚本执行过程中遇到错误时停止执行
 
 function setup_mountpoint() {
