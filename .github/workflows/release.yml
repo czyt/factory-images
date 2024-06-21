@@ -66,9 +66,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           release_id: ${{ needs.prepare_release.outputs.release_id }}
-          file: images/ubuntu-*-preinstalled-*-arm64-${{ matrix.board }}.*
+          file: images/ubuntu-*-preinstalled-*-arm64-${{ matrix.board }}*${{ matrix.addon }}*
           draft: false
           overwrite: true
 
       - name: Clean cache
-        run: sync && sudo rm -rf ./images/ubuntu-*-preinstalled-*-arm64-${{ matrix.board }}.* && sync
+        run: sync && sudo rm -rf ./images/ubuntu-*-preinstalled-*-arm64-${{ matrix.board }}*${{ matrix.addon }}* && sync
