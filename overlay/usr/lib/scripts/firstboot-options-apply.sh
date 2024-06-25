@@ -25,7 +25,10 @@ get_dbus_session_address() {
 }
 # fix mpp service error
 if [ -f "/dev/mpp_service" ] ;then
+    echo "chown /dev/mpp_service to $target_user .."
     chown -R $target_user:$target_user "/dev/mpp_service"
+else
+    echo "the mpp service not exist"
 fi
 # Get the D-Bus session address for the target user
 get_dbus_session_address $target_user
