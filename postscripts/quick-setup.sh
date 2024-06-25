@@ -74,14 +74,14 @@ EOF
     systemctl enable firstboot-options-apply
 
     # disable setup wizard:
-    #echo "set skipping oem-config"
-    #systemctl disable oem-config.service
-    #systemctl disable oem-config.target
+    echo "set skipping oem-config"
+    systemctl disable oem-config.service
+    systemctl disable oem-config.target
     # Check for additional services that may need to be disabled
-    #systemctl list-unit-files | grep oem-config
-    #Remove startup wizard
-    #rm -rf /var/lib/oem-config
-    #apt-get remove -y oem-config-gtk ubiquity-frontend-gtk ubiquity-slideshow-ubuntu
+    systemctl list-unit-files | grep oem-config
+    Remove startup wizard
+    rm -rf /var/lib/oem-config
+    apt-get remove -y oem-config-gtk ubiquity-frontend-gtk ubiquity-slideshow-ubuntu
 
     # optional:set password expire after login
     # chage -d 0 holomotion
