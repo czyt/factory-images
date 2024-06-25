@@ -42,7 +42,7 @@ jobs:
           - holomotion
           - mongodb
           - trainging
-    steps:  # 将 steps 重新对齐修复
+    steps:  
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
         with:
