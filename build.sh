@@ -6,7 +6,7 @@ if [ -z "$SUDO_USER" ]; then
 fi
 
 set -e
-trap 'echo Error: in $0 on line $LINENO' ERR  # 在脚本执行过程中遇到错误时停止执行
+trap 'echo Error: in $0 on line $LINENO' ERR  
 
 function setup_mountpoint() {
     local mountpoint="$1"
@@ -49,6 +49,10 @@ function teardown_mountpoint() {
     done
     mv "$mountpoint"/etc/resolv.conf{.tmp,}
     mv "$mountpoint"/etc/nsswitch.conf{.tmp,}
+    if [ -f $mountpoint/usr/bin/qemu-aarch64-static ]; then
+        rm -rf $mountpoint/usr/bin/qemu-aarch64-static
+    fi
+    
 }
 
 function build_image() {
@@ -115,11 +119,6 @@ function build_image() {
             cd "$init_build_dir"
             echo "current working in $(pwd)"
 
-            echo "check the mpp server"
-            if [ -f "/dev/mpp_server" ];then
-                echo "the /dev/mpp_server exists "
-            fi
-
             echo "Copying QEMU binary..."
             apt-get install qemu-user-static binfmt-support -y
 
@@ -144,6 +143,7 @@ function build_image() {
 
             echo "Entering chroot environment to execute chroot-run.sh..."
             chroot $MOUNT_POINT /usr/bin/qemu-aarch64-static /bin/bash /tmp/chroot-run.sh "$addon"
+
             echo "enter the dist dir again.."
             teardown_mountpoint $MOUNT_POINT
 
