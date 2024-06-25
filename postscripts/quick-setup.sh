@@ -225,15 +225,9 @@ EOL
     SUBSYSTEM=="usb", ATTR{idProduct}=="000f", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
 EOF
 
-echo "check the mpp server"
-if [ -f "/dev/mpp_server" ];then
-    echo "the /dev/mpp_server exists "
-else
-    echo "the /dev/mpp_server not exists "
-fi
-#    echo "clean useless packages"
-#    apt -y autoremove
-   echo "run quick setup script completed"
+    echo "clean useless packages"
+    apt -y autoremove
+    echo "run quick setup script completed"
 
     return 0
 }
