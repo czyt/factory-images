@@ -95,6 +95,13 @@ EOF
     echo "holomotion:holomotion" |  /bin/bash -c "chpasswd"
     usermod -aG sudo "holomotion"
 
+    if getent group "video" > /dev/null 2>&1; then
+        sudo usermod -aG video "holomotion"
+        echo "User holomotion added to group video."
+    else
+        echo "Group video does not exist."
+    fi
+    
     # setup home dir for the new user
     mkdir -p "/home/holomotion"
     /bin/bash -c "chown -R holomotion:holomotion /home/holomotion"
