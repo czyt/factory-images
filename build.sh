@@ -57,9 +57,9 @@ function build_image() {
 
     init_build_dir=$(pwd)
 
-    local dis_relese_url="https://api.github.com/repos/Joshua-Riek/ubuntu-rockchip/releases/latest"
-    local image_latest_tag=$(curl -s "$dis_relese_url" | grep -m 1 '"tag_name":' | awk -F '"' '{print $4}')
-
+    # local dis_relese_url="https://api.github.com/repos/Joshua-Riek/ubuntu-rockchip/releases/latest"
+    # local image_latest_tag=$(curl -s "$dis_relese_url" | grep -m 1 '"tag_name":' | awk -F '"' '{print $4}')
+    local image_latest_tag="v2.1.0"
     if [ -n "$image_latest_tag" ]; then
         echo "The ubuntu-rockchip latest release tag: $image_latest_tag"
         local image_download_url="https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/$image_latest_tag/ubuntu-24.04-preinstalled-desktop-arm64-$board.img.xz"
