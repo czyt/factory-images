@@ -95,12 +95,20 @@ EOF
     echo "holomotion:holomotion" |  /bin/bash -c "chpasswd"
     usermod -aG sudo "holomotion"
 
-    if getent group "video" > /dev/null 2>&1; then
-        sudo usermod -aG video "holomotion"
-        echo "User holomotion added to group video."
-    else
-        echo "Group video does not exist."
-    fi
+    user_groups="adm cdrom dip video plugdev users lpadmin sambashare"
+    for ug in $user_groups; 
+    do
+        if  getent group "$ug "> /dev/null 2>&1; then
+            usermod -aG "$ug" "holomotion"
+            if [ $? -eq 0 ]; then
+                echo "Successfully added holomotion to $ug"
+            else
+                echo "Failed to add holomotion to $ug"
+            fi
+        else
+            echo "Group $ug does not exist"
+        fi
+    done
     
     # setup home dir for the new user
     mkdir -p "/home/holomotion"
