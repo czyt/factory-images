@@ -23,7 +23,10 @@ get_dbus_session_address() {
         echo "$DBUS_SESSION_BUS_ADDRESS" > "$dbus_address_file"
     fi
 }
-
+# fix mpp service error
+if [ -f "/dev/mpp_service" ] ;then
+    chown -R $target_user:$target_user "/dev/mpp_service"
+fi
 # Get the D-Bus session address for the target user
 get_dbus_session_address $target_user
 
