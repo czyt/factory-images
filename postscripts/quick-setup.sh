@@ -98,15 +98,11 @@ EOF
     user_groups="adm cdrom dip video plugdev users lpadmin sambashare"
     for ug in $user_groups; 
     do
-        if  getent group "$ug "> /dev/null 2>&1; then
-            usermod -aG "$ug" "holomotion"
-            if [ $? -eq 0 ]; then
-                echo "Successfully added holomotion to $ug"
-            else
-                echo "Failed to add holomotion to $ug"
-            fi
+        if getent group $ug > /dev/null 2>&1; then
+            sudo usermod -aG $ug "holomotion"
+            echo "User holomotion added to group $ug."
         else
-            echo "Group $ug does not exist"
+            echo "Group $ug does not exist."
         fi
     done
     
