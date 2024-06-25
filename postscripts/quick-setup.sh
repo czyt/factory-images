@@ -12,13 +12,7 @@ function quick_setup() {
     echo "install basic software runtime and lib"
     apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs   ipcalc  espeak-ng  git  xclip  unity-control-center cockpit caribou 
 
-    # apt-get install -y libx264-dev libmpv-dev ffmpeg mpg123 mpv
-echo "check the mpp server"
-if [ -f "/dev/mpp_server" ];then
-    echo "the /dev/mpp_server exists "
-else
-    echo "the /dev/mpp_server not exists "
-fi
+    apt-get install -y libx264-dev libmpv-dev  mpg123 mpv
 
     # add forwarder service
     echo "install forwarder service"
@@ -40,10 +34,10 @@ fi
 
 
     # add custom theme to change the bootlogo
-    # echo "install holomotion theme"
-    # THEME_PLYMOUTH="/usr/share/plymouth/themes/holomotion/holomotion.plymouth"
-    # update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth $THEME_PLYMOUTH 150
-    # update-alternatives --set default.plymouth $THEME_PLYMOUTH
+    echo "install holomotion theme"
+    THEME_PLYMOUTH="/usr/share/plymouth/themes/holomotion/holomotion.plymouth"
+    update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth $THEME_PLYMOUTH 150
+    update-alternatives --set default.plymouth $THEME_PLYMOUTH
 
     # set wallpapers
     echo "apply wallpapers dir settings"
@@ -80,14 +74,14 @@ EOF
     systemctl enable firstboot-options-apply
 
     # disable setup wizard:
-    echo "set skipping oem-config"
-    systemctl disable oem-config.service
-    systemctl disable oem-config.target
+    #echo "set skipping oem-config"
+    #systemctl disable oem-config.service
+    #systemctl disable oem-config.target
     # Check for additional services that may need to be disabled
-    systemctl list-unit-files | grep oem-config
+    #systemctl list-unit-files | grep oem-config
     #Remove startup wizard
-    rm -rf /var/lib/oem-config
-    apt-get remove -y oem-config-gtk ubiquity-frontend-gtk ubiquity-slideshow-ubuntu
+    #rm -rf /var/lib/oem-config
+    #apt-get remove -y oem-config-gtk ubiquity-frontend-gtk ubiquity-slideshow-ubuntu
 
     # optional:set password expire after login
     # chage -d 0 holomotion
