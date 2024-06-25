@@ -6,7 +6,6 @@ on:
       - "*"
   workflow_dispatch:
 
-
 permissions:
   contents: write
 
@@ -39,10 +38,10 @@ jobs:
           - orangepi-5-plus
         addon:
           - ""
-          - holomotion
-          - mongodb
-          - trainging
-    steps:  
+          #- holomotion
+          #- mongodb
+          #- trainging
+    steps:
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
         with:
