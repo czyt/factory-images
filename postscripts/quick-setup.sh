@@ -79,7 +79,7 @@ EOF
     systemctl disable oem-config.target
     # Check for additional services that may need to be disabled
     systemctl list-unit-files | grep oem-config
-    Remove startup wizard
+    # Remove startup wizard
     rm -rf /var/lib/oem-config
     apt-get remove -y oem-config-gtk ubiquity-frontend-gtk ubiquity-slideshow-ubuntu
 
