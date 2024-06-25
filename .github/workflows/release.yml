@@ -47,9 +47,9 @@ jobs:
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
+          android: false
+          dotnet: false
+          haskell: false
           large-packages: true
           swap-storage: true
 
