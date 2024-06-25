@@ -24,12 +24,13 @@ get_dbus_session_address() {
     fi
 }
 # fix mpp service error
-if [ -f "/dev/mpp_service" ] ;then
-    echo "chown /dev/mpp_service to $target_user .."
-    chown -R $target_user:$target_user "/dev/mpp_service"
+if id -nG $target_user | grep -qw "video"; then
+    echo "user:$target_user already in video group."
 else
-    echo "the mpp service not exist"
+    echo "add user:$target_user to video group."
+    usermod -aG video $target_user 
 fi
+
 # Get the D-Bus session address for the target user
 get_dbus_session_address $target_user
 
