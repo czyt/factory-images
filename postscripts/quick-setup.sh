@@ -14,15 +14,6 @@ function quick_setup() {
 
     apt-get install -y libx264-dev libmpv-dev  mpg123 mpv
 
-    
-    LATEST_RELEASE_ID=$(git -C "$REPO_PATH" describe --tags $(git -C "$REPO_PATH" rev-list --tags --max-count=1))
-    LATEST_COMMIT_ID=$(git -C "$REPO_PATH" rev-parse HEAD)
-
-    # 输出到文件
-    OUTPUT_FILE="/path/to/output.txt"
-    echo "Latest Release ID: $LATEST_RELEASE_ID" > $OUTPUT_FILE
-    echo "Latest Commit ID: $LATEST_COMMIT_ID" >> $OUTPUT_FILE
-
     # add forwarder service
     echo "install forwarder service"
     local api_url="https://api.github.com/repos/holomotion/forwarder/releases/latest"
@@ -265,16 +256,14 @@ EOF
     build_commit_id=$(curl -s "https://api.github.com/repos/$repo_owner/$repo_name/commits" | jq -r '.[0].sha')
     build_time=$(date +"%Y-%m-%d %H:%M:%S")
 
-    build_version="/build_version"
-
-    cat <<-EOF >$build_version
+    os_build_version="/etc/os_build_version"
+    cat <<-EOF >"$os_build_version"
     build:$build_release_id-$build_commit_id
     source:https://github.com/$repo_owner/$repo_name
     build time: $build_time
 EOF
-    chmod 644 $build_version
-
-    cat $build_version
+    chmod 644 "$os_build_version"
+    cat "$os_build_version"
 
     echo "clean useless packages"
     apt -y autoremove
