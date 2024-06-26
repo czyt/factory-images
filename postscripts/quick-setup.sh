@@ -14,6 +14,15 @@ function quick_setup() {
 
     apt-get install -y libx264-dev libmpv-dev  mpg123 mpv
 
+    
+    LATEST_RELEASE_ID=$(git -C "$REPO_PATH" describe --tags $(git -C "$REPO_PATH" rev-list --tags --max-count=1))
+    LATEST_COMMIT_ID=$(git -C "$REPO_PATH" rev-parse HEAD)
+
+    # 输出到文件
+    OUTPUT_FILE="/path/to/output.txt"
+    echo "Latest Release ID: $LATEST_RELEASE_ID" > $OUTPUT_FILE
+    echo "Latest Commit ID: $LATEST_COMMIT_ID" >> $OUTPUT_FILE
+
     # add forwarder service
     echo "install forwarder service"
     local api_url="https://api.github.com/repos/holomotion/forwarder/releases/latest"
@@ -85,6 +94,18 @@ EOF
 
     # optional:set password expire after login
     # chage -d 0 holomotion
+
+    # remove oem user
+    if id "oem" &>/dev/null; then
+        echo "try to remove oem user"
+        if userdel -r "oem";then
+            echo "user oem was deleted"
+        else
+            echo "failed to remove user oem."
+        fi
+    else
+        echo "user oem does not exist,no need to process"
+    fi
 
     mkdir -p /etc/skel/.config
     printf yes |  tee /etc/skel/.config/gnome-initial-setup-done
@@ -236,9 +257,29 @@ EOL
     SUBSYSTEM=="usb", ATTR{idProduct}=="000f", ATTR{idVendor}=="0603", MODE="0666", OWNER="holomotion", GROUP="holomotion"
 EOF
 
+    echo "create build info in image"
+    repo_owner="holomotion"
+    repo_name="factory-images"
+
+    build_release_id=$(curl -s "https://api.github.com/repos/$repo_owner/$repo_name/releases/latest" | jq -r .tag_name)
+    build_commit_id=$(curl -s "https://api.github.com/repos/$repo_owner/$repo_name/commits" | jq -r '.[0].sha')
+    build_time=$(date +"%Y-%m-%d %H:%M:%S")
+
+    build_version="/build_version"
+
+    cat <<-EOF >$build_version
+    build:$build_release_id-$build_commit_id
+    source:https://github.com/$repo_owner/$repo_name
+    build time: $build_time
+EOF
+    chmod 644 $build_version
+
+    cat $build_version
+
     echo "clean useless packages"
     apt -y autoremove
     echo "run quick setup script completed"
+
 
     return 0
 }
