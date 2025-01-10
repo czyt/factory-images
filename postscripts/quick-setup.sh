@@ -10,7 +10,7 @@ function quick_setup() {
 
     # Install other packages
     echo "install basic software runtime and lib"
-    apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs   ipcalc  espeak-ng  git  xclip  unity-control-center cockpit caribou  wireless-tools wpasupplicant net-tools gawk zbar-tools
+    apt-get  install -y unclutter-xfixes gnome-shell-extension-desktop-icons-ng gnome-shell-extension-prefs lrzsz  ipcalc  espeak-ng  git  xclip  unity-control-center cockpit caribou  wireless-tools wpasupplicant net-tools gawk zbar-tools
 
     apt-get install -y libx264-dev libmpv-dev  mpg123 mpv
 
