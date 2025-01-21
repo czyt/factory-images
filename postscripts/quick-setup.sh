@@ -55,6 +55,12 @@ EOF
     Banner=/etc/issue.cockpit
 EOF
 
+    # install and enable shell extensions
+    gnome-extensions install /tmp/shellextensions/disable-gestures-three-fingers.shell-extension.zip
+    if gnome-extensions list | grep -q disable-gestures-three-fingers; then
+        gnome-extensions enable disable-gestures-three-fingers
+    fi
+    
     # change timezone
      echo "change timezone"
     cat <<-EOF >"/etc/timezone"

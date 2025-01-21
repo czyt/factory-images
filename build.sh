@@ -135,9 +135,10 @@ function build_image() {
             mkdir -p "$MOUNT_POINT/usr/share/backgrounds"
             cp "./overlay/usr/share/backgrounds/holomotion01.jpeg" $MOUNT_POINT/usr/share/backgrounds/holomotion01.jpeg
 
-            echo "Copying user scripts to the mounted filesystem..."
+            echo "Copying user scripts and shell extensions to the mounted filesystem..."
             mkdir -p $MOUNT_POINT/tmp
             cp -r "./postscripts" $MOUNT_POINT/tmp/
+            cp -r ./overlay/usr/share/shellextensions $MOUNT_POINT/tmp/shellextensions/
             cp -f "./chroot/chroot-run.sh" $MOUNT_POINT/tmp/chroot-run.sh
 
 
