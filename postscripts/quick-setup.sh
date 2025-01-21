@@ -56,8 +56,10 @@ EOF
 EOF
 
     # install and enable shell extensions
+    echo "install shell extensions"
     gnome-extensions install /tmp/shellextensions/disable-gestures-three-fingers.shell-extension.zip
     if gnome-extensions list | grep -q disable-gestures-three-fingers; then
+        echo "pre-enable shell extension:disable-gestures-three-fingers"
         gnome-extensions enable disable-gestures-three-fingers
     fi
     
