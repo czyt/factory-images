@@ -54,6 +54,9 @@ EOF
     [Session]
     Banner=/etc/issue.cockpit
 EOF
+    # apply tweaks
+    gnome-extensions disable tiling-assistant@ubuntu.com
+    gsettings set org.gnome.mutter edge-tiling false
 
     # install and enable shell extensions
     echo "install shell extensions"
