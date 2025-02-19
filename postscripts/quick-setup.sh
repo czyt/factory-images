@@ -1,4 +1,42 @@
 # shellcheck shell=bash
+
+# Function to get the user's country (shell-only version)
+get_current_country() {
+    # Use curl and jq to get the country code
+    local country=$(curl -s "https://api.country.is" | jq -r '.country')
+
+    # Handle potential errors (e.g., if curl or jq fail, or the API is down)
+    if [ -z "$country" ]; then
+        echo "Error: Could not determine country. Assuming non-China." >&2
+        country="XX"  # Use a non-China code as a fallback
+    fi
+
+    echo "$country"
+}
+
+# Function to download a file, using a mirror if in China
+download_file() {
+    local url="$1"
+    local save_path="$2"
+    local country=$(get_current_country)
+
+    local download_url
+    if [ "$country" = "CN" ]; then
+        download_url="https://fastgit.czyt.tech/$url"
+        echo "Using FastGit mirror: $download_url"
+    else
+        download_url="$url"
+        echo "Using original URL: $download_url"
+    fi
+
+    if wget "$download_url" -O "$save_path"; then
+        return 0
+    else
+        echo "Error: download failed $download_url" >&2
+        return 1  # 失败
+    fi
+}
+
 function quick_setup() {
     echo "run quick setup script"
     # Install dotnet runtime
@@ -25,7 +63,7 @@ function quick_setup() {
         echo "the forwarder latest release tag for  is: $forwarder_latest_tag"
         forwarder_download_url="https://github.com/holomotion/forwarder/releases/download/$forwarder_latest_tag/forwarder-aarch64-unknown-linux-musl.zip"
         forwarder_save_path="/tmp/forwarder.zip"
-        if wget  "${forwarder_download_url}" -O "${forwarder_save_path}"; then
+        if download_file  "${forwarder_download_url}"  "${forwarder_save_path}"; then
             unzip "${forwarder_save_path}" -d "usr/bin/"
             rm "${forwarder_save_path}"
         fi
@@ -37,7 +75,7 @@ function quick_setup() {
         rustdesk_installer_url="https://github.com/rustdesk/rustdesk/releases/download/1.3.7/rustdesk-1.3.7-aarch64.deb"
         deb_save_path="/tmp/rustdesk-1.3.7-aarch64.deb"
         # download rustdesk binary
-        if wget  "${rustdesk_installer_url}" -O "${deb_save_path}"; then
+        if download_file  "${rustdesk_installer_url}" "${deb_save_path}"; then
             # ensure dpkg exist
             apt-get install -y dpkg libxdo3
             dpkg -i "${deb_save_path}"

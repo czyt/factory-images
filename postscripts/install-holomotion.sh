@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 function install_holomotion() {
-    ehco "install NT.Tool"
+    echo "install NT.Tool"
     git clone  https://e.coding.net/g-hvab4800/holomotion_update/NT.Tool.git "/opt/NT.Tool"
     chown -R holomotion:holomotion "/opt/NT.Tool"
     cat <<-EOF > "/usr/share/applications/NT.Tool.desktop"
