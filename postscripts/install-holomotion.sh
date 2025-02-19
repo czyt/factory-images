@@ -1,5 +1,20 @@
 # shellcheck shell=bash
 function install_holomotion() {
+    ehco "install NT.Tool"
+    git clone  https://e.coding.net/g-hvab4800/holomotion_update/NT.Tool.git "/opt/NT.Tool"
+    chown -R holomotion:holomotion "/opt/NT.Tool"
+    cat <<-EOF > "/usr/share/applications/NT.Tool.desktop"
+    [Desktop Entry]
+    Type=Application
+    Name=NT.Tool
+    Exec=/opt/NT.Tool/NT.Tool
+    Icon=/opt/NT.Tool/icon.png
+    Terminal=false
+    Categories=Utility;
+EOF
+    chmod +x "/usr/share/applications/NT.Tool.desktop"
+    echo "NT.Tool installed success"
+
     echo "pre-install holomotion"
 
     installerRepo="https://e.coding.net/g-hvab4800/holomotion_update/HoloMotion_Update.git"
@@ -38,18 +53,18 @@ EOF
     echo "check file $install_src "
     if [ -f "${install_src}" ]; then
         echo "copying ${install_src} to ${install_app} "
-         cp -f "${install_src}" "${install_app}" >/dev/null 2>&1 || true
+        cp -f "${install_src}" "${install_app}" >/dev/null 2>&1 || true
         echo "create soft link for $install_app  with target $install_bin"
-         ln -s -f "$install_app" "$install_bin" >/dev/null 2>&1 || true
-         chmod +x "$install_app" >/dev/null 2>&1 || true
+        ln -s -f "$install_app" "$install_bin" >/dev/null 2>&1 || true
+        chmod +x "$install_app" >/dev/null 2>&1 || true
     fi
 
     echo "check file $startup_app "
     if [ -f "${startup_app}" ];then
         echo "create soft link for $startup_app  with target $startup_bin"
-         ln -s -f "$startup_app" "$startup_bin" >/dev/null 2>&1 || true
-         chmod +x "$startup_app" >/dev/null 2>&1 || true
-         chmod +x "$startup_app_src" >/dev/null 2>&1 || true
+        ln -s -f "$startup_app" "$startup_bin" >/dev/null 2>&1 || true
+        chmod +x "$startup_app" >/dev/null 2>&1 || true
+        chmod +x "$startup_app_src" >/dev/null 2>&1 || true
     fi
 
 
