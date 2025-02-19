@@ -32,6 +32,26 @@ function quick_setup() {
         systemctl enable forwarder
     fi
 
+    echo  "install rustdesk.."
+    if [  -d "/tmp" ]; then
+        rustdesk_installer_url="https://github.com/rustdesk/rustdesk/releases/download/1.3.7/rustdesk-1.3.7-aarch64.deb"
+        deb_save_path="/tmp/rustdesk-1.3.7-aarch64.deb"
+        # download rustdesk binary
+        if wget  "${rustdesk_installer_url}" -O "${deb_save_path}"; then
+            # ensure dpkg exist
+            apt-get install -y dpkg libxdo3
+            dpkg -i "${deb_save_path}"
+            rm -rf "${deb_save_path}"
+            # install rustdesk check service
+            mkdir -p "/usr/lib/scripts/"
+            cp "/usr/lib/systemd/system/rustdesk-config-checker.service" "/usr/lib/systemd/system/rustdesk-config-checker.service"
+            cp "/usr/lib/scripts/rustdesk-config-checker.sh" "/usr/lib/scripts/rustdesk-config-checker.sh"
+            systemctl enable rustdesk-config-checker
+        else
+            echo "Failed to download RustDesk installer"
+        fi
+    fi
+
 
     # add custom theme to change the bootlogo
     echo "install holomotion theme"
@@ -58,20 +78,18 @@ EOF
     # install and enable shell extensions
     echo "install shell extensions"
     gnome-extensions install /tmp/shellextensions/disable-gestures-three-fingers.shell-extension.zip
-    mkdir -p /usr/share/shellextensions
-    cp /tmp/shellextensions/disable-gestures-three-fingers.shell-extension.zip /usr/share/shellextensions/disable-gestures-three-fingers.shell-extension.zip
     if gnome-extensions list | grep -q disable-gestures-three-fingers; then
         echo "pre-enable shell extension:disable-gestures-three-fingers"
         gnome-extensions enable disable-gestures-three-fingers
     fi
-    
+
     # change timezone
-     echo "change timezone"
+    echo "change timezone"
     cat <<-EOF >"/etc/timezone"
     Asia/Shanghai
 EOF
-     rm /etc/localtime
-     ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    rm /etc/localtime
+    ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
     # change hostname
     # ensure script have execute permission
