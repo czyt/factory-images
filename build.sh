@@ -8,6 +8,45 @@ fi
 set -e
 trap 'echo Error: in $0 on line $LINENO' ERR  
 
+
+
+# Function to get the user's country (shell-only version)
+get_current_country() {
+    # Use curl and jq to get the country code
+    local country=$(curl -s "https://api.country.is" | jq -r '.country')
+
+    # Handle potential errors (e.g., if curl or jq fail, or the API is down)
+    if [ -z "$country" ]; then
+        echo "Error: Could not determine country. Assuming non-China." >&2
+        country="XX"  # Use a non-China code as a fallback
+    fi
+
+    echo "$country"
+}
+
+# Function to download a file, using a mirror if in China
+download_file() {
+    local url="$1"
+    local save_path="$2"
+    local country=$(get_current_country)
+
+    local download_url
+    if [ "$country" = "CN" ]; then
+        download_url="https://fastgit.czyt.tech/$url"
+        echo "Using FastGit mirror: $download_url"
+    else
+        download_url="$url"
+        echo "Using original URL: $download_url"
+    fi
+
+    if wget "$download_url" -O "$save_path"; then
+        return 0
+    else
+        echo "Error: download failed $download_url" >&2
+        return 1
+    fi
+}
+
 function setup_mountpoint() {
     local mountpoint="$1"
 
@@ -79,7 +118,7 @@ function build_image() {
             echo "$image_save_name already exists. Skipping download."
         else
             echo "$image_save_name not found. Downloading..."
-            wget "$image_download_url" -O "$image_save_name"> /dev/null  2>&1
+            download_file "$image_download_url"  "$image_save_name"
         fi
 
         echo "Check if the image exists"

@@ -33,7 +33,7 @@ download_file() {
         return 0
     else
         echo "Error: download failed $download_url" >&2
-        return 1  # 失败
+        return 1
     fi
 }
 
