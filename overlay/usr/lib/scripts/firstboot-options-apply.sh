@@ -57,6 +57,16 @@ sudo -u $target_user env DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" gs
 sudo -u $target_user env DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" gsettings set org.gnome.desktop.input-sources current 2
 sudo -u $target_user env DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" ibus restart
 
+gnome-extensions disable tiling-assistant@ubuntu.com
+gsettings set org.gnome.mutter edge-tiling false
+
+if [ -f "/usr/share/shellextensions/disable-gestures-three-fingers.shell-extension.zip" ];then
+    gnome-extensions install "/usr/share/shellextensions/disable-gestures-three-fingers.shell-extension.zip"
+    if gnome-extensions list | grep -q disable-gestures-three-fingers; then
+        echo "pre-enable shell extension:disable-gestures-three-fingers"
+        gnome-extensions enable disable-gestures-three-fingers
+    fi
+fi
 
 if [ -f "/usr/share/backgrounds/holomotion01.jpeg" ];then
     echo "set wallpaper"
